@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="hero">
+    <h1 style="font-size: 3.5rem; font-weight: 800; margin-bottom: 1rem; line-height: 1.1;">Find the Best <span
+            style="color: var(--secondary-color);">Professional</span> For Your Home</h1>
+    <p style="font-size: 1.25rem; color: #cbd5e1; max-width: 700px; margin: 0 auto 2.5rem;">Connecting you with verified
+        skilled workers for plumbing, electrical, construction, and more.</p>
+
+    <div
+        style="max-width: 600px; margin: 0 auto; background: rgba(255,255,255,0.1); padding: 0.5rem; border-radius: 15px; backdrop-filter: blur(10px); border: 1px solid var(--glass-border); display: flex; gap: 0.5rem;">
+        <form action="{{ url_for('public_dashboard') }}" method="GET" style="display: flex; width: 100%; gap: 0.5rem;">
+            <input type="text" name="service" class="form-control"
+                placeholder="Search for service (e.g. Plumber, Electrician...)"
+                style="border: none; background: transparent; padding: 1rem; flex: 1; font-size: 1.1rem;">
+            <button type="submit" class="btn btn-primary"
+                style="padding: 0 2rem; border-radius: 12px; font-weight: 700;">Search</button>
+        </form>
+    </div>
+
+    {% if not current_user.is_authenticated %}
+    <div style="margin-top: 3rem; display: flex; gap: 1.5rem; justify-content: center;">
+        <a href="{{ url_for('register_public') }}" class="btn btn-outline"
+            style="border-radius: 10px; padding: 1rem 2rem;">Join as Client</a>
+        <a href="{{ url_for('register_labour') }}" class="btn btn-primary"
+            style="border-radius: 10px; padding: 1rem 2rem;">Register as Pro</a>
+    </div>
+    {% endif %}
+</div>
+
+<div class="row">
+    <div style="display: flex; gap: 3rem; flex-wrap: wrap;">
+        <!-- AI Recommendations Section -->
+        <div style="flex: 2; min-width: 350px;">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+                <div
+                    style="background: linear-gradient(90deg, #6366f1, #a855f7); color: white; padding: 0.4rem 1rem; border-radius: 30px; font-size: 0.8rem; font-weight: 700; letter-spacing: 1px;">
+                    AI RECOMMENDED</div>
+                <h2 style="margin: 0; font-size: 1.8rem;">Top Rated Professionals</h2>
+            </div>
+
+            <div class="grid">
+                {% for labour, avg in top_rated %}
+                <div class="card"
+                    style="text-align: center; display: flex; flex-direction: column; align-items: center; padding: 2.5rem 1.5rem;">
+                    <div style="position: relative; margin-bottom: 1.5rem;">
+                        {% if labour.profile_image %}
+                        <img src="{{ url_for('uploaded_file', filename=labour.profile_image) }}" class="profile-img"
+                            style="width: 100px; height: 100px; margin-bottom: 0;">
+                        {% else %}
+                        <img src="{{ url_for('static', filename='img/labour_placeholder.png') }}" class="profile-img"
+                            style="width: 100px; height: 100px; margin-bottom: 0;">
+                        {% endif %}
+                        <div
+                            style="position: absolute; bottom: 0; right: 0; background: var(--accent-color); width: 25px; height: 25px; border-radius: 50%; border: 3px solid var(--primary-color); display: flex; align-items: center; justify-content: center; font-size: 10px;">
+                            ✔</div>
+                    </div>
+                    <h3 style="margin-bottom: 0.5rem;">{{ labour.full_name }}</h3>
+                    <p style="color: var(--secondary-color); font-weight: 600; margin-bottom: 1rem;">{{
+                        labour.service_offered }}</p>
+                    <div style="display: flex; gap: 0.2rem; color: #fbc02d; margin-bottom: 1.5rem;">
+                        {% for i in range(avg|int) %}★{% endfor %}
+                        <span style="font-weight: 700; color: white; margin-left: 0.5rem;">{{ "%.1f"|format(avg)
+                            }}</span>
+                    </div>
+                    <a href="{{ url_for('view_labour', id=labour.labour_id) }}" class="btn btn-outline"
+                        style="width: 100%; border-color: var(--glass-border); font-size: 0.95rem; border-radius: 12px;">View
+                        Portfolio</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Right Side: New Joiners -->
+        <div style="flex: 1; min-width: 300px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem;">
+                <h2 style="margin: 0; font-size: 1.8rem;">New Talents</h2>
+                <a href="{{ url_for('public_dashboard') }}"
+                    style="color: var(--secondary-color); text-decoration: none; font-size: 0.9rem;">See All &rarr;</a>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                {% for labour in recent_labours %}
+                <a href="{{ url_for('view_labour', id=labour.labour_id) }}" class="card"
+                    style="display: flex; align-items: center; gap: 1.5rem; padding: 1.2rem; text-decoration: none; color: inherit;">
+                    <div
+                        style="width: 60px; height: 60px; background: rgba(255,255,255,0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; color: var(--secondary-color); border: 1px solid var(--glass-border);">
+                        {{ labour.full_name[0] }}
+                    </div>
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0; font-size: 1.1rem;">{{ labour.full_name }}</h4>
+                        <p style="margin: 0.2rem 0 0; font-size: 0.85rem; color: #94a3b8;">{{ labour.service_offered }}
+                        </p>
+                    </div>
+                    <div style="color: var(--accent-color); font-size: 1.2rem;">&rsaquo;</div>
+                </a>
+                {% endfor %}
+            </div>
+
+            <!-- Marketing Card -->
+            <div class="card"
+                style="margin-top: 2rem; background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2)); border-color: rgba(168, 85, 247, 0.3);">
+                <h3 style="margin-bottom: 0.8rem;">Are you a professional?</h3>
+                <p style="font-size: 0.9rem; line-height: 1.5; color: #cbd5e1; margin-bottom: 1.5rem;">Join 1,000+
+                    skilled workers growing their business with Hire Labour.</p>
+                <a href="{{ url_for('register_labour') }}" class="btn btn-primary"
+                    style="width: 100%; border-radius: 10px;">Get Started Now</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
